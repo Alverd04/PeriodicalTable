@@ -27,12 +27,19 @@ public class ElementLayout extends AppCompatActivity {
 
         elementName = findViewById(R.id.simbolo);
         elementName.setText(dadesElement.getString("simbol"));
-        elementName = findViewById(R.id.nombre);
+        elementName = findViewById(R.id.nom);
         elementName.setText(dadesElement.getString("nom"));
         elementName = findViewById(R.id.numero);
         elementName.setText(String.valueOf(dadesElement.getInt("numero")));
-        elementName = findViewById(R.id.serie_quimica);
-        elementName.setText(dadesElement.getString(""));
+        elementName = findViewById(R.id.massaatomica);
+        elementName.setText(String.valueOf(dadesElement.getInt("massa_atomica")));
+        elementName = findViewById(R.id.seriequimica);
+        elementName.setText(dadesElement.getString("serie_quimica"));
+        elementName = findViewById(R.id.configuracio);
+        elementName.setText(dadesElement.getString("configuracio"));
+        elementName = findViewById(R.id.estat);
+        elementName.setText(dadesElement.getString("estat"));
+
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
