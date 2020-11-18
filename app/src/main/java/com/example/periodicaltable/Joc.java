@@ -1,32 +1,23 @@
 package com.example.periodicaltable;
 
-import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import java.util.Random;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+public class Joc extends AppCompatActivity {
 
-public class MainActivity extends AppCompatActivity {
-
-    // Movida al filtrar
-    //
-
+    private Random r = new Random();
     private Element[] elements =
             new Element[]{
                     new Element("H", 1, "no metàlic", "Hidrogen", "1.00794(4)", "1s1", "gas"),
@@ -149,282 +140,130 @@ public class MainActivity extends AppCompatActivity {
                     new Element("Og", 118, "gas noble", "Oganesson", "294", "[Rn] 5f14 6d10 7s2 7p6", "sintètic"),
             };
 
+    private int score = 0;
+    private int highscore;
 
-    private int highscore = 0;
-    private AdaptadorElements adaptadorElements;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_joc);
+        newGame(elements);
+        highscore = getIntent().getIntExtra("highscore", 0);
+        TextView highscore_txt = findViewById(R.id.highscore);
+        highscore_txt.setText(String.valueOf(highscore));
+        TextView puntuacio = findViewById(R.id.puntuacio);
+        puntuacio.setText(String.valueOf(score));
+        // Seleccionar botó nova partida
 
-        adaptadorElements = new AdaptadorElements(getApplicationContext(), elements);
-
-        ListView listElements = (ListView) findViewById(R.id.element_list);
-        listElements.setAdapter(adaptadorElements);
-
-        listElements.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        Button new_game = findViewById(R.id.new_btn);
+        new_game.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Bundle datosElemento = new Bundle();
-                datosElemento.putInt("numero", elements[position].getNumero());
-                datosElemento.putString("simbol", elements[position].getSimbol());
-                datosElemento.putString("nom", elements[position].getNom());
-                datosElemento.putString("massa_atomica", elements[position].getMassa_atomica());
-                datosElemento.putString("estat", elements[position].getEstat());
-                datosElemento.putString("configuracio", elements[position].getConfiguracio());
-                datosElemento.putString("serie_quimica", elements[position].getSeriequimica());
+            public void onClick(View view) {
+                newGame(elements);
+            }
+        });
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-                Intent i = new Intent(getApplicationContext(), ElementLayout.class);
-                i.putExtras(datosElemento);
-                startActivity(i);
+
+    }
+
+    private void newGame(Element [] elements){
+
+        // Trobar els dos elements on ficar el text
+
+        TextView element1_txt = findViewById(R.id.element1);
+        TextView element2_txt = findViewById(R.id.element2);
+
+        // Trobar els dos butons per a seleccioanr quin es el guanyador
+
+        Button element1_btn = findViewById(R.id.element1_btn);
+        Button element2_btn = findViewById(R.id.element2_btn);
+
+        // Generar nom dels elements
+
+        final int element1_num = r.nextInt(118);
+        final int element2_num = r.nextInt(118);
+
+        element1_txt.setText(elements[element1_num].getSimbol());
+        element2_txt.setText(elements[element2_num].getSimbol());
+
+        // Comprovar quin és l'element amb nombre atòmic major
+
+        element1_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                comprovarRespuesta(element1_num, element2_num);
+            }
+        });
+
+        element2_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                comprovarRespuesta(element2_num, element1_num);
             }
         });
 
 
+    }
 
+    private void acierto(){
+        this.score += 1;
+        TextView puntuacio = findViewById(R.id.puntuacio);
+        puntuacio.setText(String.valueOf(score));
+    }
 
+    private void error(){
+        if (score > 0) {
+            this.score -= 1;
+            TextView puntuacio = findViewById(R.id.puntuacio);
+            puntuacio.setText(String.valueOf(score));
+        }
+        else{
+            score = 0;
+            TextView puntuacio = findViewById(R.id.puntuacio);
+            puntuacio.setText(String.valueOf(score));
+        }
+    }
+
+    private void comprovarRespuesta(int element1, int element2){
+        if(elements[element1].getNumero() > elements[element2].getNumero()){
+            acierto();
+        }
+        else{
+            error();
+        }
+        if(score > highscore){
+            highscore = score;
+            TextView highscore_txt = findViewById(R.id.highscore);
+            highscore_txt.setText(String.valueOf(highscore));
+        }
+        newGame(elements);
+    }
+
+    private void endIntent(){
+        Intent i = new Intent();
+        i.putExtra("highscore", this.highscore);
+        setResult(RESULT_OK, i);
+        finish();
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            endIntent();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-
-
-
-
         switch(item.getItemId()){
-            case R.id.jugar_menu:
-                Intent i = new Intent(getApplicationContext(), Joc.class);
-                i.putExtra("highscore", highscore);
-                startActivityForResult(i, 1);
-                return true;
-            case R.id.default_menu:
-                adaptadorElements = new AdaptadorElements(getApplicationContext(), elements);
-                ListView listElements = (ListView) findViewById(R.id.element_list);
-                listElements.setAdapter(adaptadorElements);
-                adaptadorElements.notifyDataSetChanged();
+            case android.R.id.home:
+                endIntent();
 
-                listElements.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Bundle datosElemento = new Bundle();
-                        datosElemento.putInt("numero", elements[position].getNumero());
-                        datosElemento.putString("simbol", elements[position].getSimbol());
-                        datosElemento.putString("nom", elements[position].getNom());
-                        datosElemento.putString("massa_atomica", elements[position].getMassa_atomica());
-                        datosElemento.putString("estat", elements[position].getEstat());
-                        datosElemento.putString("configuracio", elements[position].getConfiguracio());
-                        datosElemento.putString("serie_quimica", elements[position].getSeriequimica());
-
-                        Intent i = new Intent(getApplicationContext(), ElementLayout.class);
-                        i.putExtras(datosElemento);
-                        startActivity(i);
-                    }
-                });
-
-                return true;
-            case R.id.solid_menu:
-                final Element[] solid = filtrar("sòlid", elements);
-                adaptadorElements = new AdaptadorElements(getApplicationContext(), solid);
-                ListView listSolid = (ListView) findViewById(R.id.element_list);
-                listSolid.setAdapter(adaptadorElements);
-
-                listSolid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Bundle datosElemento = new Bundle();
-                        datosElemento.putInt("numero", solid[position].getNumero());
-                        datosElemento.putString("simbol", solid[position].getSimbol());
-                        datosElemento.putString("nom", solid[position].getNom());
-                        datosElemento.putString("massa_atomica", solid[position].getMassa_atomica());
-                        datosElemento.putString("estat", solid[position].getEstat());
-                        datosElemento.putString("configuracio", solid[position].getConfiguracio());
-                        datosElemento.putString("serie_quimica", solid[position].getSeriequimica());
-
-                        Intent i = new Intent(getApplicationContext(), ElementLayout.class);
-                        i.putExtras(datosElemento);
-                        startActivity(i);
-                    }
-                });
-
-                adaptadorElements.notifyDataSetChanged();
-                return true;
-            case R.id.liquid_menu:
-                final Element[] liquid = filtrar("líquid", elements);
-                adaptadorElements = new AdaptadorElements(getApplicationContext(), liquid);
-                ListView listLiquid = (ListView) findViewById(R.id.element_list);
-                listLiquid.setAdapter(adaptadorElements);
-                adaptadorElements.notifyDataSetChanged();
-
-                listLiquid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Bundle datosElemento = new Bundle();
-                        datosElemento.putInt("numero", liquid[position].getNumero());
-                        datosElemento.putString("simbol", liquid[position].getSimbol());
-                        datosElemento.putString("nom", liquid[position].getNom());
-                        datosElemento.putString("massa_atomica", liquid[position].getMassa_atomica());
-                        datosElemento.putString("estat", liquid[position].getEstat());
-                        datosElemento.putString("configuracio", liquid[position].getConfiguracio());
-                        datosElemento.putString("serie_quimica", liquid[position].getSeriequimica());
-
-                        Intent i = new Intent(getApplicationContext(), ElementLayout.class);
-                        i.putExtras(datosElemento);
-                        startActivity(i);
-                    }
-                });
-
-                return true;
-            case R.id.gas_menu:
-                final Element[] gas = filtrar("gas", elements);
-                adaptadorElements = new AdaptadorElements(getApplicationContext(), gas);
-                ListView listGas = (ListView) findViewById(R.id.element_list);
-                listGas.setAdapter(adaptadorElements);
-                adaptadorElements.notifyDataSetChanged();
-
-                listGas.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Bundle datosElemento = new Bundle();
-                        datosElemento.putInt("numero", gas[position].getNumero());
-                        datosElemento.putString("simbol", gas[position].getSimbol());
-                        datosElemento.putString("nom", gas[position].getNom());
-                        datosElemento.putString("massa_atomica", gas[position].getMassa_atomica());
-                        datosElemento.putString("estat", gas[position].getEstat());
-                        datosElemento.putString("configuracio", gas[position].getConfiguracio());
-                        datosElemento.putString("serie_quimica", gas[position].getSeriequimica());
-
-                        Intent i = new Intent(getApplicationContext(), ElementLayout.class);
-                        i.putExtras(datosElemento);
-                        startActivity(i);
-                    }
-                });
-                return true;
-            case R.id.sintetic_menu:
-                final Element[] sintetic = filtrar("sintètic", elements);
-                adaptadorElements = new AdaptadorElements(getApplicationContext(), sintetic);
-                ListView listSintetic = (ListView) findViewById(R.id.element_list);
-                listSintetic.setAdapter(adaptadorElements);
-                adaptadorElements.notifyDataSetChanged();
-
-                listSintetic.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Bundle datosElemento = new Bundle();
-                        datosElemento.putInt("numero", sintetic[position].getNumero());
-                        datosElemento.putString("simbol", sintetic[position].getSimbol());
-                        datosElemento.putString("nom", sintetic[position].getNom());
-                        datosElemento.putString("massa_atomica", sintetic[position].getMassa_atomica());
-                        datosElemento.putString("estat", sintetic[position].getEstat());
-                        datosElemento.putString("configuracio", sintetic[position].getConfiguracio());
-                        datosElemento.putString("serie_quimica", sintetic[position].getSeriequimica());
-
-                        Intent i = new Intent(getApplicationContext(), ElementLayout.class);
-                        i.putExtras(datosElemento);
-                        startActivity(i);
-                    }
-                });
-                return true;
         }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-
-        if(requestCode == 1){
-            highscore = data.getIntExtra("highscore", 0);
-        }
-
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private Element[] filtrar(String name, Element[] elements){
-        ArrayList<Element> arrayList = new ArrayList<Element>();
-
-        for(int i = 0; i < elements.length; i++){
-            if(elements[i].getEstat().equalsIgnoreCase(name)){
-                arrayList.add(elements[i]);
-            }
-        }
-
-        Element[] array = new Element[arrayList.size()];
-
-        for(int i = 0; i < 4; i++){
-            for(int j = 0; i < arrayList.size(); i++){
-                array[i] = arrayList.get(i);
-            }
-        }
-        return array;
+        return true;
     }
 }
 
-
-class AdaptadorElements extends ArrayAdapter<Element> {
-
-    private Context context;
-
-    // Creo lienzo
-    public AdaptadorElements(Context context, Element[] elements) {
-        super(context, R.layout.element, elements);
-        this.context = context;
-    }
-
-    @NonNull
-    @Override
-    // Construir cada elemento de la lista
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-
-        LayoutInflater layoutInflater = LayoutInflater.from(context);
-
-        //Estructura de cada elemento de la lista
-        View item = layoutInflater.inflate(R.layout.element, null);
-
-        final Element element = (Element) getItem(position);
-
-        final String estat_element = element.getEstat();
-        TextView texto = (TextView) item.findViewById(R.id.nom);
-        String nom = element.getNom();
-        texto.setText(nom);
-        texto = (TextView) item.findViewById(R.id.pes);
-        String massa_atomica = element.getMassa_atomica();
-        texto.setText(massa_atomica);
-        texto = (TextView) item.findViewById(R.id.numero);
-        String numero = String.valueOf(element.getNumero());
-        texto.setText(numero);
-        texto = (TextView) item.findViewById(R.id.symbol);
-        String symbol = element.getSimbol();
-        texto.setText(symbol);
-
-        switch(estat_element){
-            case "sòlid":
-                item.setBackgroundColor(Color.parseColor("#000000"));
-                break;
-            case "gas":
-                item.setBackgroundColor(Color.parseColor("#33ff00"));
-                break;
-            case "líquid":
-                item.setBackgroundColor(Color.parseColor("#0000FF"));
-                break;
-            case "sintètic":
-                item.setBackgroundColor(Color.parseColor("#FF0000"));
-                break;
-        }
-
-
-
-        // Repetir hasta la muerte
-        return item;
-    }
-
-
-
-
-}

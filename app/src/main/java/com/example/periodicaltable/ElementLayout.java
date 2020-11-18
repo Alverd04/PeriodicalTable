@@ -1,5 +1,7 @@
 package com.example.periodicaltable;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 
@@ -7,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -39,6 +42,15 @@ public class ElementLayout extends AppCompatActivity {
         elementName.setText(dadesElement.getString("configuracio"));
         elementName = findViewById(R.id.estat);
         elementName.setText(dadesElement.getString("estat"));
+
+        final Intent browser = new Intent(Intent.ACTION_VIEW, Uri.parse("https://ca.wikipedia.org/wiki/"+dadesElement.getString("nom")));
+        Button link = findViewById(R.id.link);
+
+        link.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(browser);
+            }
+        });
 
 
         FloatingActionButton fab = findViewById(R.id.fab);

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/jugar_menu"
+        android:title="Jugar" />
+    <item
+        android:id="@+id/default_menu"
+        android:title="Default" />
+    <item
+        android:id="@+id/solid_menu"
+        android:title="Solid" />
+    <item
+        android:id="@+id/liquid_menu"
+        android:title="Líquid" />
+    <item
+        android:id="@+id/gas_menu"
+        android:title="Gas" />
+    <item
+        android:id="@+id/sintetic_menu"
+        android:title="Sintètic" />
+</menu>
